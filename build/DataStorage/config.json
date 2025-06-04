@@ -1,0 +1,24 @@
+{
+  "server": {
+    "port": 3333,
+    "host": "8.134.57.51"
+  },
+  "client": {
+    "defaultServerUrl": "http://8.134.57.51:3333",
+    "timeout": 33330,
+    "retryAttempts": 3
+  },
+  "websocket": {
+    "url": "ws://8.134.57.51:3333/ws",
+    "reconnectInterval": 5000,
+    "maxReconnectAttempts": 10
+  },
+  "data": {
+    "dataDir": "./remote-data",
+    "sessionDir": "./remote-sessions"
+  },
+  "session": {
+    "secret": "yat-potato-secret-key",
+    "maxAge": 86400000
+  }
+}

@@ -1,0 +1,477 @@
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 底部导航栏样式 */
+.bottom-navigation {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 0;
+  background-color: #ffffff;
+  border-top: 1px solid #eaeaea;
+}
+
+.bottom-navigation button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 8px 0;
+  width: 20%;
+}
+
+.bottom-navigation button span {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.bottom-navigation button.active {
+  color: #FF6B6B;
+}
+
+.bottom-navigation button:hover {
+  color: #FF6B6B;
+}
+
+/* 计时器屏幕样式 */
+.timer-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  height: 100%;
+}
+
+.timer-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.timer-display {
+  font-size: 72px;
+  font-weight: 300;
+  color: #212529;
+  margin-bottom: 20px;
+}
+
+.motivational-quote {
+  font-size: 16px;
+  color: #6c757d;
+  margin-bottom: 40px;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.control-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-btn.start {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+.control-btn.pause {
+  background-color: #FFD166;
+  color: #212529;
+}
+
+.control-btn.reset {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.control-btn.settings {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+/* 设置面板样式 */
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.settings-panel {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 300px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.settings-panel h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #212529;
+  text-align: center;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.settings-control input {
+  width: 70px;
+  height: 40px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 16px;
+  text-align: center;
+  margin-right: 10px;
+}
+
+.settings-control span {
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.settings-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.settings-buttons button:first-child {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.settings-buttons button:last-child {
+  background-color: #FF6B6B;
+  color: white;
+}
+
+/* 任务列表屏幕样式 */
+.tasks-screen {
+  padding: 20px;
+}
+
+.tasks-screen h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #212529;
+}
+
+.task-input-container {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.task-input-container input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ced4da;
+  border-radius: 8px 0 0 8px;
+  font-size: 16px;
+}
+
+.task-input-container button {
+  padding: 12px 20px;
+  background-color: #FF6B6B;
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.task-list {
+  list-style-type: none;
+}
+
+.task-list li {
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.task-list li:last-child {
+  border-bottom: none;
+}
+
+.task-list li span {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.task-list li.completed span {
+  color: #6c757d;
+  text-decoration: line-through;
+}
+
+/* 报告屏幕样式 */
+.reports-screen {
+  padding: 20px;
+}
+
+.reports-screen h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #212529;
+}
+
+.report-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.report-tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #6c757d;
+  cursor: pointer;
+  position: relative;
+}
+
+.report-tab.active {
+  color: #FF6B6B;
+}
+
+.report-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #FF6B6B;
+}
+
+.report-content {
+  padding: 20px 0;
+}
+
+.report-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.report-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #FF6B6B;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.report-chart {
+  height: 200px;
+  margin-top: 30px;
+}
+
+.chart-placeholder {
+  display: flex;
+  height: 160px;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.chart-placeholder .bar {
+  width: 30px;
+  background-color: #FF6B6B;
+  opacity: 0.8;
+  border-radius: 4px 4px 0 0;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.chart-labels span {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* 成就屏幕样式 */
+.achievements-screen {
+  padding: 20px;
+}
+
+.achievements-screen h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #212529;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.achievement-item {
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  opacity: 0.5;
+}
+
+.achievement-item.unlocked {
+  background-color: #ffffff;
+  border-color: #FFD166;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  opacity: 1;
+}
+
+.achievement-icon {
+  font-size: 28px;
+  margin-right: 12px;
+}
+
+.achievement-info h3 {
+  font-size: 16px;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.achievement-info p {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+/* 锁定屏幕样式 */
+.locked-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #212529;
+  color: white;
+  text-align: center;
+}
+
+.locked-content {
+  padding: 40px 20px;
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.locked-screen h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.locked-screen .timer-display {
+  font-size: 64px;
+  color: white;
+  margin: 30px 0;
+}
+
+.lock-message {
+  font-size: 16px;
+  color: #ced4da;
+  margin-bottom: 40px;
+}
+
+.unlock-btn {
+  padding: 12px 30px;
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.unlock-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
