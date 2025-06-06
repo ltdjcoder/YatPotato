@@ -141,7 +141,7 @@ function App() {
     );
     updateTasks(updatedTasks);
   };
-
+  
   // 编辑任务
   const editTitleOfTask = (id, newTitle) => {
     const updatedTasks = tasks.map(task =>
@@ -149,6 +149,13 @@ function App() {
     );
     dataStorage.save("tasks", updateTasks);
   }
+
+  const deleteTask = (id) => {
+    // const updatedTasks = tasks.filter(task => task.id !== id);
+    const updatedTasks = tasks.map(task => task.id == id ? {...task, isDelete: true} : task);
+    updateTasks(updatedTasks);
+  };
+
   // const startEditTask = (task) => {
   //   setEditingTaskId(task.id);
   //   setEditingTaskTitle(task.title);
@@ -163,11 +170,7 @@ function App() {
   //   setEditingTaskTitle("");
   // };
 
-  // // 删除任务 没有接口暂时无该功能
-  // const deleteTask = (id) => {
-  //   const updatedTasks = tasks.filter(task => task.id !== id);
-  //   updateTasks(updatedTasks);
-  // };
+
 
   // 保存番茄钟统计数据 - 只在初始化时保存一次，避免无限循环
   useEffect(() => {
@@ -522,7 +525,7 @@ function App() {
         <button onClick={addTask}>添加</button>
       </div>
       <ul className="task-list">
-        {tasks.map(task => (
+        {tasks.map(task => task.isDelete == true ? null : (
           <li key={task.id} className={task.completed ? 'completed' : ''} style={{display: 'flex', alignItems: 'center', position: 'relative'}}>
             {editingTaskId === task.id ? (
               <>
@@ -565,10 +568,10 @@ function App() {
                       setEditingTaskTitle(task.title);
                       setMenuOpenTaskId(null);
                     }}>编辑</div>
-                    {/* <div onClick={() => {
+                    <div onClick={() => {
                       deleteTask(task.id);
                       setMenuOpenTaskId(null);
-                    }}>删除</div> */} 不能删除
+                    }}>删除</div> 
                   </div>
                 )}
               </>
