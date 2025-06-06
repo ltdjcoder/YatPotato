@@ -2,7 +2,6 @@
 import './App.css';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import PomodoroTimer from './components/PomodoroTimer';
-import StringAlias from './utils/StringAlias';
 
 
 function App() {
@@ -32,7 +31,6 @@ function App() {
   const [pomodoroStats, setPomodoroStats] = useState({
     totalPomodoros: 0,
     todayPomodoros: 0,
-    Pomodoros:[],
     totalFocusTime: 0
   });
 
@@ -80,7 +78,6 @@ function App() {
             todayPomodoros: prev.todayPomodoros + 1,
             totalFocusTime: prev.totalFocusTime + customTimerLength,
             // Pomodoros: newPomodoros
-            Pomodoros:[]
           };
         });
       }
@@ -109,10 +106,6 @@ function App() {
       // 如果存储的数据中有 Pomodoros 数组，需要将字符串转换为 StringAlias 对象
       const processedStats = {
         ...storedStats,
-        Pomodoros: storedStats.Pomodoros ? 
-          storedStats.Pomodoros.map(date => 
-            typeof date === 'string' ? new StringAlias(date) : date
-          ) : []
       };
       setPomodoroStats(processedStats);
     }
@@ -177,7 +170,7 @@ function App() {
       // 将 StringAlias 对象转换为字符串进行保存
       const statsToSave = {
         ...pomodoroStats,
-        Pomodoros: pomodoroStats.Pomodoros.map(date => date.toString())
+        
       };
       dataStorage.save("pomodoro_stats", statsToSave);
     }
@@ -604,7 +597,6 @@ function App() {
             <span className="stat-label">今日番茄数</span>
           </div>
           <div className="report-stat">
-            <span className="stat-value">{pomodoroStats.Pomodoros.length}</span>
             <span className="stat-label">打卡天数</span>
           </div>
         </div>
