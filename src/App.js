@@ -113,8 +113,8 @@ function App() {
 
   function updateTasks(newTasks){
     try{
-      const bindedTasks = window.DataStorage.bindNewArrayElement(newTasks);
-      dataStorage.save("tasks", bindedTasks);
+      // const bindedTasks = window.DataStorage.bindNewArrayElement(newTasks);
+      dataStorage.save("tasks", newTasks);
     }catch (error) {
       console.error("Error saving tasks remote:", error);
     }
