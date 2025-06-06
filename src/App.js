@@ -4,6 +4,8 @@ import './App.css';
 function App() {
   let dataStorage = window.DataStorage.loadDataStorage("ds-test");
 
+
+
   // 状态管理
   const [activeScreen, setActiveScreen] = useState('timer'); // 当前激活的屏幕
   const [isTimerRunning, setIsTimerRunning] = useState(false); // 计时器是否在运行
@@ -18,14 +20,22 @@ function App() {
   const [newTaskText, setNewTaskText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
 
+  // 登录相关状态
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  // 添加调试信息
+  console.log('当前登录状态:', isLogin);
+  
   // 在组件加载完成后从数据存储加载任务
   React.useEffect(() => {
     const storedTasks = dataStorage.load("tasks");
     if (storedTasks) {
       setTasks(storedTasks);
     }
-  }, []);
+  }, [dataStorage]);
 
   function updateTasks(newTasks){
     try{
@@ -78,6 +88,28 @@ function App() {
   // 切换屏幕锁定
   const toggleScreenLock = () => {
     setIsScreenLocked(!isScreenLocked);
+  };
+
+  // 登录处理函数
+  const handleLogin = () => {
+    // 暂时不需要真实验证，直接跳转到主界面
+    if (username.trim()) {
+      setIsLogin(true);
+    } else {
+      alert('请输入用户名');
+    }
+  };
+
+  // 注册处理函数
+  const handleRegister = () => {
+    // 临时注册逻辑 - 可以后续扩展
+    if (username.trim()) {
+      alert('注册功能开发中，请稍后再试！');
+      // 或者可以直接让用户登录
+      // setIsLogin(true);
+    } else {
+      alert('请输入用户名');
+    }
   };
 
   // 格式化时间显示
@@ -262,14 +294,84 @@ function App() {
     </div>
   );
 
+  // 渲染登录屏幕
+  const renderLoginScreen = () => (
+    <div className="login-screen-desktop">
+      <div className="login-container-desktop">
+        <div className="login-content">
+          <div className="login-header">
+            <div className="app-logo-desktop">🍅</div>
+            <h1 className="app-title-desktop">YatPotato</h1>
+            <p className="app-subtitle-desktop">专注时光，高效番茄</p>
+          </div>
+
+          <div className="login-form-wrapper">
+            <form className="login-form-desktop" onSubmit={(e) => {e.preventDefault(); handleLogin();}}>
+              <div className="input-group">
+                <div className="input-icon">👤</div>
+                <input
+                  type="text"
+                  placeholder="用户名"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="login-input"
+                />
+              </div>
+              
+              <div className="input-group">
+                <div className="input-icon">🔒</div>
+                <input
+                  type="password"
+                  placeholder="密码"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="login-input"
+                />
+              </div>
+              
+              <button type="submit" className="login-btn-primary">
+                开始专注之旅
+              </button>
+              
+            </form>
+            <form className="login-form-desktop" onSubmit={(e) => {e.preventDefault(); handleRegister();}}>
+            <button type="submit" className="register-btn-secondary">
+                            没有账号？注册一个新的吧！
+                            </button>
+            </form>
+          </div>
+
+          
+
+          
+        </div>
+      </div>
+    </div>
+  );
+
   // 主渲染函数
   return (
     <div className="app">
+      {/* 🔥 热重载测试区域 */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        background: '#ff6b35',
+        color: 'white',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        fontSize: '12px',
+        zIndex: 9999
+      }}>
+      </div>
+
       {isScreenLocked ? (
         renderLockedScreen()
-      ) : (
+      ) : isLogin ? (
         <>
           <div className="content">
+            
             {activeScreen === 'timer' && renderTimerScreen()}
             {activeScreen === 'tasks' && renderTaskListScreen()}
             {activeScreen === 'reports' && renderReportsScreen()}
@@ -311,6 +413,8 @@ function App() {
             </button>
           </nav>
         </>
+      ) : (
+        renderLoginScreen()
       )}
     </div>
   );

@@ -33,15 +33,23 @@ function createWindow() {
     icon: path.join(__dirname, 'favicon.ico'),
     show: false,
   });
+  // 根据环境加载不同的资源
+  if (isDev) {
+    // 开发环境：加载 React 开发服务器
+    mainWindow.loadURL('http://localhost:3000');
+  } else {
+    // 生产环境：加载构建后的文件
+    const indexPath = path.join(__dirname, '../build/index.html');
+    mainWindow.loadFile(indexPath);
+  }
 
-  // 直接加载构建后的 index.html
-  const indexPath = path.join(__dirname, '../build/index.html');
-  mainWindow.loadFile(indexPath);
-
-  // 窗口准备就绪时显示并打开开发者工具
+  // 窗口准备就绪时显示并根据环境决定是否打开开发者工具
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    mainWindow.webContents.openDevTools();
+    // 只在开发环境下打开开发者工具
+    if (isDev) {
+      mainWindow.webContents.openDevTools();
+    }
   });
 
   // 当窗口关闭时

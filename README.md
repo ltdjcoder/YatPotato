@@ -1,10 +1,36 @@
-# Getting Started with Create React App
+# YatPotato - React Electron 桌面应用
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+这是一个使用 React 和 Electron 构建的桌面应用程序项目。
 
-## Available Scripts
+## 项目技术栈
 
-In the project directory, you can run:
+- **前端框架**: React 19.1.0
+- **桌面应用框架**: Electron 36.3.2
+- **构建工具**: React Scripts 5.0.1
+- **开发环境**: Node.js + npm
+
+## 项目结构
+
+```
+yatpotato-react-test/
+├── src/                    # React 应用源代码
+│   ├── components/         # React 组件
+│   ├── utils/             # 工具函数
+│   ├── App.js             # 主应用组件
+│   └── index.js           # React 入口
+├── public/                # 静态资源和 Electron 配置
+│   ├── electron.js        # Electron 主进程
+│   └── preload.js         # 预加载脚本
+├── .cursor/               # Cursor AI 规则配置
+│   └── rules/             # 开发规则文件
+├── build/                 # 构建输出目录
+├── data/                  # 数据存储目录
+└── package.json           # 项目配置
+```
+
+## 开发命令
+
+### 标准 React 命令
 
 ### `npm start`
 
@@ -28,6 +54,54 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### Electron 专用命令
+
+### `npm run electron-dev`
+
+并发启动 React 开发服务器和 Electron 应用，支持热重载。
+
+### `npm run electron-build`
+
+构建 React 应用后启动 Electron。
+
+### `npm run dist`
+
+构建并打包 Electron 应用为可分发的安装包。
+
+## 变更日志
+
+### 2024-12-19 - AI助手变更记录 (最新)
+
+#### 新增文件
+- `.cursor/rules/auto-git-commit.mdc` - 自动Git提交规则，定义AI助手在完成代码修改后自动执行git add和git commit的工作流程，包含提交信息规范、错误处理和验证反馈
+
+#### 修改文件
+- `.cursor/rules/development-workflow.mdc` - 
+  - 在AI助手工作流程中新增"自动提交"步骤
+  - 添加了Git提交要求的强制执行规则
+  - 要求每次代码修改后立即执行git操作
+
+---
+
+### 2024-12-19 - AI助手变更记录
+
+#### 新增文件
+- `.cursor/rules/project-overview.mdc` - 项目概览规则，描述项目架构、目录结构和主要入口点
+- `.cursor/rules/react-development.mdc` - React 开发规则，包含组件开发约定、状态管理和测试规范
+- `.cursor/rules/electron-development.mdc` - Electron 开发规则，涵盖架构、IPC通信、安全实践和打包指南
+- `.cursor/rules/coding-standards.mdc` - 代码规范标准，定义代码风格、命名约定、依赖管理和性能优化准则
+- `.cursor/rules/development-workflow.mdc` - 开发工作流程规则，包含项目设置、开发流程、构建部署和调试指南
+- `.cursor/rules/change-tracking.mdc` - 变更跟踪规则，要求AI助手在每次代码修改后记录变更日志
+
+#### 修改文件
+- `README.md` - 
+  - 添加了项目说明和技术栈介绍
+  - 重新组织了项目结构说明
+  - 新增了Electron专用命令说明
+  - 创建了变更日志部分用于跟踪所有代码变更
+
+---
 
 ### `npm run eject`
 
