@@ -68,22 +68,17 @@ function App() {
         
         setPomodoroStats(prev => {
           // 检查今天的日期是否已经在 Pomodoros 数组中
-          const todayString = today.toString();
-          const todayExists = prev.Pomodoros.some(date => {
-            // 安全地比较，处理可能是字符串或StringAlias对象的情况
-            const dateString = (typeof date === 'string') ? date : date.toString();
-            return dateString === todayString;
-          });
-          const newPomodoros = todayExists 
-            ? prev.Pomodoros // 如果已存在，不重复添加
-            : [...prev.Pomodoros, today]; // 如果不存在，添加到数组末尾
+          // const todayExists = prev.Pomodoros.some(date => date.equals(today));
+          // const newPomodoros = todayExists 
+          //   ? prev.Pomodoros // 如果已存在，不重复添加
+          //   : [...prev.Pomodoros, today]; // 如果不存在，添加到数组末尾
           
           return {
             ...prev,
             totalPomodoros: prev.totalPomodoros + 1,
             todayPomodoros: prev.todayPomodoros + 1,
             totalFocusTime: prev.totalFocusTime + customTimerLength,
-            Pomodoros: newPomodoros
+            // Pomodoros: newPomodoros
           };
         });
       }
@@ -113,15 +108,9 @@ function App() {
       const processedStats = {
         ...storedStats,
         Pomodoros: storedStats.Pomodoros ? 
-          storedStats.Pomodoros.map(date => {
-            // 安全地创建StringAlias对象
-            try {
-              return typeof date === 'string' ? new StringAlias(date) : date;
-            } catch (error) {
-              console.warn('Error creating StringAlias from date:', date, error);
-              return new StringAlias(String(date));
-            }
-          }) : []
+          storedStats.Pomodoros.map(date => 
+            typeof date === 'string' ? new StringAlias(date) : date
+          ) : []
       };
       setPomodoroStats(processedStats);
     }
@@ -134,15 +123,7 @@ function App() {
       // 将 StringAlias 对象转换为字符串进行保存
       const statsToSave = {
         ...pomodoroStats,
-        Pomodoros: pomodoroStats.Pomodoros.map(date => {
-          // 安全地转换为字符串
-          try {
-            return typeof date === 'string' ? date : date.toString();
-          } catch (error) {
-            console.warn('Error converting date to string:', date, error);
-            return String(date);
-          }
-        })
+        Pomodoros: pomodoroStats.Pomodoros.map(date => date.toString())
       };
       dataStorage.save("pomodoro_stats", statsToSave);
     }
