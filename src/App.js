@@ -137,25 +137,31 @@ function App() {
   // 切换任务完成状态
   const toggleTaskCompletion = (id) => {
     const updatedTasks = tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
+      task.id === id ? { ...task, completed: !task.completed } : {...task}
     );
     updateTasks(updatedTasks);
   };
 
   // 编辑任务
-  const startEditTask = (task) => {
-    setEditingTaskId(task.id);
-    setEditingTaskTitle(task.title);
-  };
-
-  const saveEditTask = () => {
+  const editTitleOfTask = (id, newTitle) => {
     const updatedTasks = tasks.map(task =>
-      task.id === editingTaskId ? { ...task, title: editingTaskTitle } : task
+      task.id === id ? { ...task, title: newTitle } : {...task}
     );
-    updateTasks(updatedTasks);
-    setEditingTaskId(null);
-    setEditingTaskTitle("");
-  };
+    dataStorage.save("tasks", updateTasks);
+  }
+  // const startEditTask = (task) => {
+  //   setEditingTaskId(task.id);
+  //   setEditingTaskTitle(task.title);
+  // };
+
+  // const saveEditTask = () => {
+  //   const updatedTasks = tasks.map(task =>
+  //     task.id === editingTaskId ? { ...task, title: editingTaskTitle } : {...task}
+  //   );
+  //   updateTasks(updatedTasks);
+  //   setEditingTaskId(null);
+  //   setEditingTaskTitle("");
+  // };
 
   // // 删除任务 没有接口暂时无该功能
   // const deleteTask = (id) => {

@@ -8,3 +8,6 @@ README.md
 
 # 忽略数据存储目录
 data/
+
+
+build/
