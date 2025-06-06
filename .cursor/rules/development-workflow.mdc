@@ -75,8 +75,7 @@ npm run dist
 1. **分析需求** - 理解要实现的功能或修复的问题
 2. **执行修改** - 使用适当的工具修改代码
 3. **立即记录** - 按照 [变更跟踪规则](mdc:.cursor/rules/change-tracking.mdc) 记录所有变更
-4. **自动提交** - 严格遵循 [自动Git提交规则](mdc:.cursor/rules/auto-git-commit.mdc) 执行 `git add` 和 `git commit`
-5. **验证完整性** - 确保所有文件变更都已记录和提交
+4. **验证完整性** - 确保所有文件变更都已记录在 [README.md](mdc:README.md) 中
 
 ### 记录要求
 - ✅ 每次修改都要记录
@@ -84,13 +83,6 @@ npm run dist
 - ✅ 描述要清晰具体
 - ✅ 包含修改原因
 - ❌ 不能遗漏任何文件变更
-
-### Git提交要求 ⚠️ **强制执行**
-- ✅ 完成代码修改后立即执行 `git add .`
-- ✅ 使用规范的提交信息执行 `git commit`
-- ✅ 提交信息要清晰描述变更内容
-- ✅ 遵循 [自动Git提交规则](mdc:.cursor/rules/auto-git-commit.mdc) 的所有要求
-- ❌ 不能跳过Git提交步骤
 
 ## 调试技巧
 

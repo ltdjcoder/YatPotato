@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+// YatPotato - 专注时光，高效番茄
 import './App.css';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import PomodoroTimer from './components/PomodoroTimer';
+import StringAlias from './utils/StringAlias';
+
 
 function App() {
-  let dataStorage = window.DataStorage.loadDataStorage("ds-test");
+  // 添加ref来管理输入框焦点
+  const usernameInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
+  
+  // 使用 useMemo 缓存 dataStorage 实例，避免无限重新创建
+  const dataStorage = useMemo(() => {
+    return window.DataStorage.loadDataStorage("ds-test");
+  }, []);
 
   // 状态管理
   const [activeScreen, setActiveScreen] = useState('timer'); // 当前激活的屏幕
@@ -17,15 +27,31 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [pomodoroStats, setPomodoroStats] = useState({
     totalPomodoros: 0,
     todayPomodoros: 0,
+    Pomodoros:[],
     totalFocusTime: 0
   });
 
   // 登录相关状态
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // 注册相关状态
+  const [registerUsername, setRegisterUsername] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+  
+  // 注册表单验证状态
+  const [registerErrors, setRegisterErrors] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
   // 使用新的番茄钟组件
   const pomodoroTimer = PomodoroTimer({
@@ -37,11 +63,29 @@ function App() {
     onTimerComplete: (isBreak, pomodoroCount) => {
       if (!isBreak) {
         // 更新番茄钟统计
-        setPomodoroStats(prev => ({
-          totalPomodoros: prev.totalPomodoros + 1,
-          todayPomodoros: prev.todayPomodoros + 1,
-          totalFocusTime: prev.totalFocusTime + customTimerLength
-        }));
+        // 获取今天的日期字符串
+        const today = StringAlias.today(); // 使用便捷方法创建今天的日期
+        
+        setPomodoroStats(prev => {
+          // 检查今天的日期是否已经在 Pomodoros 数组中
+          const todayString = today.toString();
+          const todayExists = prev.Pomodoros.some(date => {
+            // 安全地比较，处理可能是字符串或StringAlias对象的情况
+            const dateString = (typeof date === 'string') ? date : date.toString();
+            return dateString === todayString;
+          });
+          const newPomodoros = todayExists 
+            ? prev.Pomodoros // 如果已存在，不重复添加
+            : [...prev.Pomodoros, today]; // 如果不存在，添加到数组末尾
+          
+          return {
+            ...prev,
+            totalPomodoros: prev.totalPomodoros + 1,
+            todayPomodoros: prev.todayPomodoros + 1,
+            totalFocusTime: prev.totalFocusTime + customTimerLength,
+            Pomodoros: newPomodoros
+          };
+        });
       }
     },
     onTimerReset: () => {
@@ -56,7 +100,7 @@ function App() {
   console.log('当前登录状态:', isLogin);
   
   // 在组件加载完成后从数据存储加载任务
-  React.useEffect(() => {
+  useEffect(() => {
     const storedTasks = dataStorage.load("tasks");
     if (storedTasks) {
       setTasks(storedTasks);
@@ -65,14 +109,77 @@ function App() {
     // 加载番茄钟统计数据
     const storedStats = dataStorage.load("pomodoro_stats");
     if (storedStats) {
-      setPomodoroStats(storedStats);
+      // 如果存储的数据中有 Pomodoros 数组，需要将字符串转换为 StringAlias 对象
+      const processedStats = {
+        ...storedStats,
+        Pomodoros: storedStats.Pomodoros ? 
+          storedStats.Pomodoros.map(date => {
+            // 安全地创建StringAlias对象
+            try {
+              return typeof date === 'string' ? new StringAlias(date) : date;
+            } catch (error) {
+              console.warn('Error creating StringAlias from date:', date, error);
+              return new StringAlias(String(date));
+            }
+          }) : []
+      };
+      setPomodoroStats(processedStats);
     }
-  }, [dataStorage]);
+  }, [dataStorage]); // 现在 dataStorage 是稳定的，所以这个依赖是安全的
 
-  // 保存番茄钟统计数据
-  React.useEffect(() => {
-    dataStorage.save("pomodoro_stats", pomodoroStats);
+  // 保存番茄钟统计数据 - 只在初始化时保存一次，避免无限循环
+  useEffect(() => {
+    // 只有当统计数据不是初始值时才保存，避免无意义的保存
+    if (pomodoroStats.totalPomodoros > 0 || pomodoroStats.todayPomodoros > 0 || pomodoroStats.totalFocusTime > 0) {
+      // 将 StringAlias 对象转换为字符串进行保存
+      const statsToSave = {
+        ...pomodoroStats,
+        Pomodoros: pomodoroStats.Pomodoros.map(date => {
+          // 安全地转换为字符串
+          try {
+            return typeof date === 'string' ? date : date.toString();
+          } catch (error) {
+            console.warn('Error converting date to string:', date, error);
+            return String(date);
+          }
+        })
+      };
+      dataStorage.save("pomodoro_stats", statsToSave);
+    }
   }, [pomodoroStats, dataStorage]);
+
+  // 实时验证注册表单
+  useEffect(() => {
+    if (showRegister) {
+      const errors = {
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      };
+
+      if (registerUsername.length > 0 && registerUsername.length < 3) {
+        errors.username = '用户名至少需要3个字符';
+      }
+
+      if (email.length > 0) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          errors.email = '请输入有效的邮箱地址';
+        }
+      }
+
+      if (registerPassword.length > 0 && registerPassword.length < 6) {
+        errors.password = '密码至少需要6个字符';
+      }
+
+      if (confirmPassword.length > 0 && confirmPassword !== registerPassword) {
+        errors.confirmPassword = '两次输入的密码不一致';
+      }
+
+      setRegisterErrors(errors);
+    }
+  }, [registerUsername, email, registerPassword, confirmPassword, showRegister]);
 
   function updateTasks(newTasks){
     try{
@@ -117,24 +224,160 @@ function App() {
 
   // 登录处理函数
   const handleLogin = () => {
-    // 暂时不需要真实验证，直接跳转到主界面
-    if (username.trim()) {
-      setIsLogin(true);
-    } else {
+    if (!username.trim()) {
       alert('请输入用户名');
+      usernameInputRef.current?.focus();
+      return;
+    }
+    if (!password.trim()) {
+      alert('请输入密码');
+      passwordInputRef.current?.focus();
+      return;
+    }
+
+    setIsLogin(true);
+  };
+
+  // 处理用户名输入框的键盘事件
+  const handleUsernameKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      passwordInputRef.current?.focus();
+    }
+  };
+
+  // 处理密码输入框的键盘事件
+  const handlePasswordKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleLogin();
+    }
+  };
+
+  // 注册页面的键盘事件处理
+  const handleRegisterUsernameKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 跳转到邮箱输入框
+      const emailInput = document.querySelector('input[type="email"]');
+      emailInput?.focus();
+    }
+  };
+
+  const handleRegisterEmailKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 跳转到密码输入框
+      const passwordInputs = document.querySelectorAll('.register-input[type="password"]');
+      passwordInputs[0]?.focus();
+    }
+  };
+
+  const handleRegisterPasswordKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 跳转到确认密码输入框
+      const passwordInputs = document.querySelectorAll('.register-input[type="password"]');
+      passwordInputs[1]?.focus();
+    }
+  };
+
+  const handleRegisterConfirmPasswordKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitRegister();
     }
   };
 
   // 注册处理函数
   const handleRegister = () => {
-    // 临时注册逻辑 - 可以后续扩展
-    if (username.trim()) {
-      alert('注册功能开发中，请稍后再试！');
-      // 或者可以直接让用户登录
-      // setIsLogin(true);
-    } else {
+    setShowRegister(true);
+  };
+
+  // 提交注册信息
+  const submitRegister = () => {
+    // 清空之前的错误信息
+    setRegisterErrors({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+    
+    let hasError = false;
+
+    if (!registerUsername.trim()) {
       alert('请输入用户名');
+      setRegisterErrors(prev => ({ ...prev, username: '用户名不能为空' }));
+      hasError = true;
+    } else if (registerUsername.trim().length < 3) {
+      alert('用户名至少需要3个字符');
+      setRegisterErrors(prev => ({ ...prev, username: '用户名至少需要3个字符' }));
+      hasError = true;
     }
+
+    if (!email.trim()) {
+      alert('请输入邮箱');
+      setRegisterErrors(prev => ({ ...prev, email: '邮箱不能为空' }));
+      hasError = true;
+    } else {
+      // 简单的邮箱格式验证
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email.trim())) {
+        alert('请输入有效的邮箱地址');
+        setRegisterErrors(prev => ({ ...prev, email: '请输入有效的邮箱地址' }));
+        hasError = true;
+      }
+    }
+
+    if (!registerPassword.trim()) {
+      alert('请输入密码');
+      setRegisterErrors(prev => ({ ...prev, password: '密码不能为空' }));
+      hasError = true;
+    } else if (registerPassword.length < 6) {
+      alert('密码至少需要6个字符');
+      setRegisterErrors(prev => ({ ...prev, password: '密码至少需要6个字符' }));
+      hasError = true;
+    }
+
+    if (registerPassword !== confirmPassword) {
+      alert('两次输入的密码不一致');
+      setRegisterErrors(prev => ({ ...prev, confirmPassword: '两次输入的密码不一致' }));
+      hasError = true;
+    }
+    
+    if (hasError) {
+      return; // 如果有错误，阻止提交
+    }
+    
+    // 这里可以添加实际的注册逻辑
+    // 可以集成到您的 dataStorage 系统中
+    alert('注册成功！请使用新账户登录。');
+    
+    // 注册成功后回到登录页面，并自动填入用户名
+    setShowRegister(false);
+    setUsername(registerUsername); // 自动填入刚注册的用户名
+    setRegisterUsername('');
+    setRegisterPassword('');
+    setConfirmPassword('');
+    setEmail('');
+    backToLogin();
+  };
+
+  // 返回登录页面
+  const backToLogin = () => {
+    setShowRegister(false);
+    setRegisterUsername('');
+    setRegisterPassword('');
+    setConfirmPassword('');
+    setEmail('');
+    
+    // 确保登录状态字段也被清理
+    setUsername('');
+    setPassword('');
+    setTimeout(() => {
+      usernameInputRef.current?.focus();
+    }, 100);
   };
 
   // 渲染主计时器屏幕
@@ -258,7 +501,7 @@ function App() {
       )}
     </div>
   );
-
+  
   // 渲染任务列表屏幕
   const renderTaskListScreen = () => (
     <div className="tasks-screen">
@@ -307,6 +550,10 @@ function App() {
             <span className="stat-value">{pomodoroStats.todayPomodoros}</span>
             <span className="stat-label">今日番茄数</span>
           </div>
+          <div className="report-stat">
+            <span className="stat-value">{pomodoroStats.Pomodoros.length}</span>
+            <span className="stat-label">打卡天数</span>
+          </div>
         </div>
         <div className="report-chart">
           <h3>本周专注趋势</h3>
@@ -348,7 +595,7 @@ function App() {
             <p>一天内完成5个番茄钟</p>
           </div>
         </div>
-        <div className="achievement-item">
+        <div className="achievement-item ">
           <div className="achievement-icon">🏆</div>
           <div className="achievement-info">
             <h3>持之以恒</h3>
@@ -416,21 +663,26 @@ function App() {
               <div className="input-group">
                 <div className="input-icon">👤</div>
                 <input
+                  ref={usernameInputRef}
                   type="text"
                   placeholder="用户名"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  onKeyPress={handleUsernameKeyPress}
                   className="login-input"
+                  autoFocus
                 />
               </div>
               
               <div className="input-group">
                 <div className="input-icon">🔒</div>
                 <input
+                  ref={passwordInputRef}
                   type="password"
                   placeholder="密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handlePasswordKeyPress}
                   className="login-input"
                 />
               </div>
@@ -441,10 +693,90 @@ function App() {
               
             </form>
             <form className="login-form-desktop" onSubmit={(e) => {e.preventDefault(); handleRegister();}}>
-            <button type="submit" className="register-btn-secondary">
-                            没有账号？注册一个新的吧！
-                            </button>
+              <button type="submit" className="register-btn-secondary">
+                没有账号？注册一个新的吧！
+              </button>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 渲染注册屏幕
+  const renderRegisterScreen = () => (
+    <div className="register-screen-desktop">
+      <div className="register-container">
+        <div className="login-content">
+          <div className="login-header">
+            <div className="app-logo-desktop">🍅</div>
+            <h1 className="app-title-desktop">YatPotato</h1>
+            <p className="app-subtitle-desktop">创建你的专注账户</p>
+          </div>
+
+          <div className="login-form-wrapper">
+            <form className="login-form-desktop register-form" onSubmit={(e) => {e.preventDefault(); submitRegister();}}>
+              <div className="input-group">
+                <div className="input-icon">👤</div>
+                <input
+                  type="text"
+                  placeholder="用户名"
+                  value={registerUsername}
+                  onChange={(e) => setRegisterUsername(e.target.value)}
+                  className={`register-input ${registerErrors.username ? 'error' : ''}`}
+                  autoFocus
+                  onKeyPress={handleRegisterUsernameKeyPress}
+                />
+                {registerErrors.username && <span className="error-message">{registerErrors.username}</span>}
+              </div>
+
+              <div className="input-group">
+                <div className="input-icon">📧</div>
+                <input
+                  type="email"
+                  placeholder="邮箱地址"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`register-input ${registerErrors.email ? 'error' : ''}`}
+                  onKeyPress={handleRegisterEmailKeyPress}
+                />
+                {registerErrors.email && <span className="error-message">{registerErrors.email}</span>}
+              </div>
+              
+              <div className="input-group">
+                <div className="input-icon">🔒</div>
+                <input
+                  type="password"
+                  placeholder="密码"
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
+                  className={`register-input ${registerErrors.password ? 'error' : ''}`}
+                  onKeyPress={handleRegisterPasswordKeyPress}
+                />
+                {registerErrors.password && <span className="error-message">{registerErrors.password}</span>}
+              </div>
+
+              <div className="input-group">
+                <div className="input-icon">🔒</div>
+                <input
+                  type="password"
+                  placeholder="确认密码"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`register-input ${registerErrors.confirmPassword ? 'error' : ''}`}
+                  onKeyPress={handleRegisterConfirmPasswordKeyPress}
+                />
+                {registerErrors.confirmPassword && <span className="error-message">{registerErrors.confirmPassword}</span>}
+              </div>
+              
+              <button type="submit" className="register-btn-primary">
+                创建账户
+              </button>
+              
+            </form>
+            <button className="register-btn-secondary" onClick={backToLogin}>
+              已有账号？返回登录
+            </button>
           </div>
         </div>
       </div>
@@ -515,6 +847,8 @@ function App() {
             </button>
           </nav>
         </>
+      ) : showRegister ? (
+        renderRegisterScreen()
       ) : (
         renderLoginScreen()
       )}
