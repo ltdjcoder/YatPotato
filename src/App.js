@@ -18,12 +18,13 @@ function App() {
   // 状态管理
   const [activeScreen, setActiveScreen] = useState('timer'); // 当前激活的屏幕
   const [customTimerLength, setCustomTimerLength] = useState(25); // 自定义时长
-  const [tasks, setTasks] = useState([
-    { id: 1, title: '完成软件工程作业', completed: false },
-    { id: 2, title: '阅读《设计模式》', completed: true },
-    { id: 3, title: '准备明天的演讲', completed: false },
-  ]);
+  // 任务相关状态
+  const [tasks, setTasks] = useState([]);
   const [newTaskText, setNewTaskText] = useState('');
+  const [menuOpenTaskId, setMenuOpenTaskId] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskTitle, setEditingTaskTitle] = useState("");
+  
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
@@ -64,7 +65,7 @@ function App() {
       if (!isBreak) {
         // 更新番茄钟统计
         // 获取今天的日期字符串
-        const today = StringAlias.today(); // 使用便捷方法创建今天的日期
+        // const today = StringAlias.today(); // 使用便捷方法创建今天的日期
         
         setPomodoroStats(prev => {
           // 检查今天的日期是否已经在 Pomodoros 数组中
@@ -79,6 +80,7 @@ function App() {
             todayPomodoros: prev.todayPomodoros + 1,
             totalFocusTime: prev.totalFocusTime + customTimerLength,
             // Pomodoros: newPomodoros
+            Pomodoros:[]
           };
         });
       }
@@ -115,6 +117,58 @@ function App() {
       setPomodoroStats(processedStats);
     }
   }, [dataStorage]); // 现在 dataStorage 是稳定的，所以这个依赖是安全的
+
+  function updateTasks(newTasks){
+    try{
+      const bindedTasks = window.DataStorage.bindNewArrayElement(newTasks);
+      dataStorage.save("tasks", bindedTasks);
+    }catch (error) {
+      console.error("Error saving tasks remote:", error);
+    }
+    setTasks(newTasks);
+  }
+
+  dataStorage.registerUpdateEventWithKey("tasks", ()=>{
+    const storedTasks = dataStorage.load("tasks");
+    setTasks(storedTasks || []);
+  })
+
+  // 添加新任务
+  const addTask = () => {
+    if (newTaskText.trim() !== '') {
+      updateTasks([...tasks, { id: Date.now(), title: newTaskText, completed: false }]);
+      setNewTaskText('');
+    }
+  };
+
+  // 切换任务完成状态
+  const toggleTaskCompletion = (id) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    updateTasks(updatedTasks);
+  };
+
+  // 编辑任务
+  const startEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditingTaskTitle(task.title);
+  };
+
+  const saveEditTask = () => {
+    const updatedTasks = tasks.map(task =>
+      task.id === editingTaskId ? { ...task, title: editingTaskTitle } : task
+    );
+    updateTasks(updatedTasks);
+    setEditingTaskId(null);
+    setEditingTaskTitle("");
+  };
+
+  // // 删除任务 没有接口暂时无该功能
+  // const deleteTask = (id) => {
+  //   const updatedTasks = tasks.filter(task => task.id !== id);
+  //   updateTasks(updatedTasks);
+  // };
 
   // 保存番茄钟统计数据 - 只在初始化时保存一次，避免无限循环
   useEffect(() => {
@@ -161,35 +215,6 @@ function App() {
       setRegisterErrors(errors);
     }
   }, [registerUsername, email, registerPassword, confirmPassword, showRegister]);
-
-  function updateTasks(newTasks){
-    try{
-      dataStorage.save("tasks", newTasks);
-    }catch (error) {
-      console.error("Error saving tasks remote:", error);
-    }
-    setTasks(dataStorage.load("tasks") || newTasks);
-  }
-
-  dataStorage.registerUpdateEventWithKey("tasks", ()=>{
-    setTasks(dataStorage.load("tasks"));
-  })
-
-  // 添加新任务
-  const addTask = () => {
-    if (newTaskText.trim() !== '') {
-      updateTasks([...tasks, { id: Date.now(), title: newTaskText, completed: false }]);
-      setNewTaskText('');
-    }
-  };
-
-  // 切换任务完成状态
-  const toggleTaskCompletion = (id) => {
-    const updatedTasks = tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    );
-    updateTasks(updatedTasks);
-  };
 
   // 应用自定义时长
   const applyCustomTime = () => {
@@ -499,15 +524,62 @@ function App() {
       </div>
       <ul className="task-list">
         {tasks.map(task => (
-          <li key={task.id} className={task.completed ? 'completed' : ''}>
-            <span onClick={() => toggleTaskCompletion(task.id)}>
-              {task.completed ? '✓' : '○'} {task.title}
-            </span>
+          <li key={task.id} className={task.completed ? 'completed' : ''} style={{display: 'flex', alignItems: 'center', position: 'relative'}}>
+            {editingTaskId === task.id ? (
+              <>
+                <input
+                  type="text"
+                  className="task-edit-input"
+                  value={editingTaskTitle}
+                  onChange={e => setEditingTaskTitle(e.target.value)}
+                  style={{flex: 1, marginRight: 8}}
+                />
+                <button
+                  className="task-edit-btn save"
+                  onClick={() => {
+                    const updatedTasks = tasks.map(t =>
+                      t.id === editingTaskId ? { ...t, title: editingTaskTitle } : t
+                    );
+                    updateTasks(updatedTasks);
+                    setEditingTaskId(null);
+                    setEditingTaskTitle("");
+                  }}
+                >保存</button>
+                <button
+                  className="task-edit-btn cancel"
+                  onClick={() => setEditingTaskId(null)}
+                >取消</button>
+              </>
+            ) : (
+              <>
+                <span onClick={() => toggleTaskCompletion(task.id)} style={{flex: 1}}>
+                  {task.completed ? '✓' : '○'} {task.title}
+                </span>
+                <button
+                  className="task-menu-btn"
+                  onClick={() => setMenuOpenTaskId(menuOpenTaskId === task.id ? null : task.id)}
+                >⋮</button>
+                {menuOpenTaskId === task.id && (
+                  <div className="task-menu-dropdown">
+                    <div onClick={() => {
+                      setEditingTaskId(task.id);
+                      setEditingTaskTitle(task.title);
+                      setMenuOpenTaskId(null);
+                    }}>编辑</div>
+                    {/* <div onClick={() => {
+                      deleteTask(task.id);
+                      setMenuOpenTaskId(null);
+                    }}>删除</div> */} 不能删除
+                  </div>
+                )}
+              </>
+            )}
           </li>
         ))}
       </ul>
     </div>
   );
+
 
   // 渲染报告屏幕
   const renderReportsScreen = () => (
