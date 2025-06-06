@@ -233,20 +233,6 @@ function isLocked(obj){
     return obj && (obj._dataStorage_isLocked && obj._dataStorage_isLocked == true);
 }
 
-function bindNewArrayElement(obj){
-    if(Array.isArray(obj)) {
-        for(let i = 0; i < obj.length; i++){
-            if(!obj[i]._dataStorage_isArrayElement){
-                bindAsArrayElement(obj[i]);
-            }
-            bindNewArrayElement(obj[i]);
-        }
-    }else if(obj instanceof Object){
-        for(let key in obj){
-            bindNewArrayElement(obj[key]);
-        }
-    }
-}
 
 function bindAsArrayElement(obj){
     obj._dataStorage_isArrayElement = true;
@@ -257,54 +243,7 @@ function generateKey(){
     return crypto.randomBytes(6).toString('hex');
 }
 
-function diffAndPairWithUpdateTime(
-    last, current, time
-){
-    if(current instanceof Array){
-        let updateTime = last?last.updateTime:0;
 
-        let map = new Map();
-        if(last && last.obj){
-            for(let i = 0; i < last.obj.length; i++){
-                let arrayElment = last.obj[i];
-
-                if(arrayElment._dataStorage_isArrayElement){
-                    let key = arrayElment._dataStorage_arrayElementKey;
-                    map.set(key, arrayElment);
-                }
-            }
-        }
-
-        for(let i = 0; i < current.length; i++){
-            if(!current[i]._dataStorage_isArrayElement){
-                current[i] = diffAndPairWithUpdateTime(null, current[i], time);
-            }else {
-                let key = current[i]._dataStorage_arrayElementKey;
-                if(map.has(key)){
-                    current[i] = diffAndPairWithUpdateTime(map.get(key), current[i], time);
-                }else {
-                    current[i] = diffAndPairWithUpdateTime(null, current[i], time);
-                }
-            }
-            updateTime = Math.max(updateTime, current[i].updateTime);
-        }
-        return {updateTime: updateTime, obj: current};
-    }else if(current instanceof Object){
-        let updateTime = last?last.updateTime:0;
-        for(let key in current){
-            if(key == "_dataStorage_isArrayElement" || key == "_dataStorage_arrayElementKey") continue;
-            current[key] = diffAndPairWithUpdateTime(last?last.obj[key]:null, current[key], time);
-            updateTime = Math.max(updateTime, current[key].updateTime);
-        }
-        return {updateTime: updateTime, obj: current};
-    }else {
-        if(last && current == last.obj){
-            return {updateTime: last.updateTime, obj: current};
-        }else {
-            return {updateTime: time, obj: current};
-        }
-    }
-}
 
 function removeUpdateTime(originData){
     if(originData == null) return null;
@@ -1003,12 +942,6 @@ async function sendDataToRemote(key) {
 }
 
 function save(key, data) {
-    bindNewArrayElement(data);
-
-    let lastData = localServer.load(key);
-    data = diffAndPairWithUpdateTime(lastData, data, new Date().getTime());
-
-    data = merge(lastData, data);
 
     localServer.save(key, data);
 
